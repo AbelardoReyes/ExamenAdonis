@@ -20,13 +20,11 @@
 
 import Route from '@ioc:Adonis/Core/Route'
 
-Route.post('/usuario/registrar', 'UsersController.registrarUsuario')
-Route.post('/usuario/login', 'UsersController.login')
-Route.post('/usuario/logout', 'UsersController.logout')
-
-Route.get('/usuario/infoObjeto', 'UsersController.infoUserObjeto')
-
-Route.get('/usuario/validarToken', 'UsersController.validarToken')
+Route.post('/usuario/registrar', 'UserController.registrarUsuario')
+Route.post('/usuario/login', 'UserController.login')
+Route.post('/usuario/logout', 'UserController.logout')
+Route.get('/usuario/infoObjeto', 'UserController.infoUserObjeto')
+Route.get('/usuario/validarToken', 'UserController.validarToken')
 
 /*Route.group(() => {
   Route.post('/register', 'UserController.register')
