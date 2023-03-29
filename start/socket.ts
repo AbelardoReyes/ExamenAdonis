@@ -27,8 +27,9 @@ Ws.io.on("connection", (socket) => {
       monitores.push(data.id);
     }
     console.log(data.id, "se agrego al arreglo: ", monitores);
+    socket.emit("usuarios", monitores);
+
   });
-  Ws.io.emit("usuarios", monitores);
   Ws.io.emit("connectedUsers", monitores);
 
   console.log(monitores);
