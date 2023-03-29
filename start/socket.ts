@@ -23,15 +23,11 @@ Ws.io.on("connection", (socket) => {
 
   Ws.io.emit("connectedUsers", monitores);
 
-  socket.conn.on("hello", ({ type, data }) => {
-    console.log(data, "el otro");
-    console.log(type);
-  });
-
-  socket.on("hello", ({ type, data }) => {
+  socket.on("barco", (data) => {
     console.log(data, "sockett");
-    console.log(type);
+    socket.emit("barco", data);
   });
+  Ws.io.emit("barco", monitores);
 
   Ws.io.emit("connectedUsers", monitores);
 
