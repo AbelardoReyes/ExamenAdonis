@@ -4,21 +4,29 @@ Ws.boot()
 /**
  * Listen for incoming socket connections
  */
-const monitores: string[] = []
-let turno = 9
+const monitores: string[] = [];
+let turno = 9;
+
 Ws.io.on("connection", (socket) => {
   console.log("Conexion activa", socket.id);
+
   socket.on("disconnect", () => {
     monitores.splice(monitores.indexOf(socket.id), 1);
     Ws.io.emit("connectedUsers", monitores);
     console.log(monitores);
   });
-  console.log(monitores);
-  socket.on("monitor", (data) => {
-    monitores.push(data);
-  });
+
   Ws.io.emit("connectedUsers", monitores);
 
+
+  socket.on("monitor", (data) => {
+    if (!monitores.includes(data)) {
+      monitores.push(data);
+      Ws.io.emit("connectedUsers", monitores);
+    }
+  });
+
+  console.log(monitores);
   socket.on("inicio", (data) => {
     if (turno == 9){turno = monitores.indexOf(data)}
     Ws.io.emit("inicio", data);
