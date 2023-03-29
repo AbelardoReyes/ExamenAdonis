@@ -9,12 +9,6 @@ let turno = 9;
 
 Ws.io.on("connection", (socket) => {
   console.log("Conexion activa", socket.id);
-  if (!monitores.includes(socket.id)) {
-    Ws.io.emit("connectedUsers", monitores);
-    monitores.push(socket.id);
-  }
-
-
   socket.on("disconnect", () => {
     monitores.splice(monitores.indexOf(socket.id), 1);
     Ws.io.emit("connectedUsers", monitores);
@@ -24,9 +18,13 @@ Ws.io.on("connection", (socket) => {
   Ws.io.emit("connectedUsers", monitores);
 
   socket.on("barco", (data) => {
-    console.log(data, "sockett");
-    socket.emit("barco", data);
+    if (!monitores.includes(data.id)) {
+      Ws.io.emit("connectedUsers", monitores);
+      monitores.push(data.id);
+    }
+    console.log(data.id, "se agrego al arreglo: ", monitores);
   });
+
   Ws.io.emit("barco", monitores);
 
   Ws.io.emit("connectedUsers", monitores);
