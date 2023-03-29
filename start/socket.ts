@@ -9,6 +9,9 @@ let turno = 9;
 
 Ws.io.on("connection", (socket) => {
   console.log("Conexion activa", socket.id);
+  if (turno == 9){turno = monitores.indexOf( socket.id)}
+  Ws.io.emit("inicio",  socket.id);
+  console.log(turno, monitores.indexOf( socket.id));
 
   socket.on("disconnect", () => {
     monitores.splice(monitores.indexOf(socket.id), 1);
@@ -23,11 +26,12 @@ Ws.io.on("connection", (socket) => {
     }
     console.log(type);
   });
+
+
+
   console.log(monitores);
   socket.on("inicio", (data) => {
-    if (turno == 9){turno = monitores.indexOf(data)}
-    Ws.io.emit("inicio", data);
-    console.log(turno, monitores.indexOf(data));
+
   });
 
   socket.on("termino", (data) => {
