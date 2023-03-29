@@ -16,11 +16,12 @@ Ws.io.on("connection", (socket) => {
     console.log(monitores);
   });
   Ws.io.emit("connectedUsers", monitores);
-  socket.conn.on("monitor", (data) => {
-    if (!monitores.includes(socket.id)) {
+  socket.conn.on("monitor", ({ type, data }) => {
+    if (!monitores.includes(data)) {
       Ws.io.emit("connectedUsers", monitores);
-      monitores.push(socket.id);
+      monitores.push(data);
     }
+    console.log(type);
   });
   console.log(monitores);
   socket.on("inicio", (data) => {
