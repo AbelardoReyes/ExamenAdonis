@@ -9,23 +9,19 @@ let turno = 9;
 
 Ws.io.on("connection", (socket) => {
   console.log("Conexion activa", socket.id);
-
+  if (!monitores.includes(socket.id)) {
+    Ws.io.emit("connectedUsers", monitores);
+    monitores.push(socket.id);
+  }
   socket.on("disconnect", () => {
     monitores.splice(monitores.indexOf(socket.id), 1);
     Ws.io.emit("connectedUsers", monitores);
     console.log(monitores);
   });
-
   Ws.io.emit("connectedUsers", monitores);
-
-
   socket.on("monitor", (data) => {
-    if (!monitores.includes(data)) {
-      monitores.push(data);
-      Ws.io.emit("connectedUsers", monitores);
-    }
-  });
 
+  });
   console.log(monitores);
   socket.on("inicio", (data) => {
     if (turno == 9){turno = monitores.indexOf(data)}
