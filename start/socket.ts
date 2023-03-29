@@ -7,7 +7,7 @@ Ws.boot()
 const monitores: string[] = []
 let turno = 0
 Ws.io.on("connection", (socket) => {
-  monitores.push(socket.id);
+  console.log("Conexion activa");
 
   socket.on("disconnect", () => {
     monitores.splice(monitores.indexOf(socket.id), 1);
@@ -19,11 +19,7 @@ Ws.io.on("connection", (socket) => {
 
   Ws.io.emit("connectedUsers", monitores);
 
-  socket.on("start", (startPosition: number) => {
-    console.log("paso 2", startPosition);
-    Ws.io.emit("boatPosition", startPosition);
-  });
-  socket.on("nextBoat", (nextNumber: number) => {
-    Ws.io.emit("boatPosition", nextNumber);
+  socket.on("monitor", (data) => {
+    monitores.push(socket.id);
   });
 });
