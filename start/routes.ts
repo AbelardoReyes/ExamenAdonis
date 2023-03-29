@@ -20,7 +20,15 @@
 
 import Route from '@ioc:Adonis/Core/Route'
 
-Route.group(() => {
+Route.post('/usuario/registrar', 'UsersController.registrarUsuario')
+Route.post('/usuario/login', 'UsersController.login')
+Route.post('/usuario/logout', 'UsersController.logout')
+
+Route.get('/usuario/infoObjeto', 'UsersController.infoUserObjeto')
+
+Route.get('/usuario/validarToken', 'UsersController.validarToken')
+
+/*Route.group(() => {
   Route.post('/register', 'UserController.register')
   Route.post('/login', 'UserController.login')
   Route.get('/user', 'UserController.getTokenUser')
@@ -31,4 +39,4 @@ Route.group(() => {
       Route.get('/user/:id', 'UserController.getUser').where('id', /^[0-9]+$/)
     }).middleware('auth')
   })
-}).prefix('api/v1')
+}).prefix('api/v1')*/

@@ -1,144 +1,117 @@
-import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { schema, rules } from '@ioc:Adonis/Core/Validator'
+import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User'
 import Hash from '@ioc:Adonis/Core/Hash'
+import Logger from '@ioc:Adonis/Core/Logger'
 
 export default class UserController {
-    public async register ({ request, response }: HttpContextContract) {
-        await request.validate({
-            schema: schema.create({
-                name: schema.string([
-                    rules.maxLength(40),
-                ]),
-                ap_paterno: schema.string([
-                    rules.maxLength(20),
-                ]),
-                ap_materno: schema.string([
-                    rules.maxLength(20),
-                ]),
-                email: schema.string([
-                    rules.email(),
-                    rules.unique({ table: 'users', column: 'email' }),
-                    rules.trim(),
-                ]),
-                password: schema.string([
-                    rules.minLength(8),
-                    rules.maxLength(20),
-                    rules.trim(),
-                ]),
-            }),
-            messages: {
-                required: 'El campo {{ field }} es obligatorio.',
-                maxLength: 'El campo {{ field }} debe tener un máximo de {{ options.maxLength }} caracteres.',
-                minLength: 'El campo {{ field }} debe tener un mínimo de {{ options.minLength }} caracteres.',
-                email: 'El campo {{ field }} debe ser un correo electrónico válido.',
-                unique: 'El campo {{ field }} ya se encuentra en uso.',
-                string: 'El campo {{ field }} debe ser una cadena de caracteres.',
-                trim: 'El campo {{ field }} no debe contener espacios en blanco.',
-            }
-        })
-
-        const user = await User.create({
-            name: request.input('name'),
-            ap_paterno: request.input('ap_paterno'),
-            ap_materno: request.input('ap_materno'),
-            email: request.input('email'),
-            password: await Hash.make(request.input('password')),
-        })
-
-        return response.created({
-            'status': 201,
-            'message': 'Usuario registrado correctamente.',
-            'data': user,
-            'error': [],
-        })
+  public async registrarUsuario({ request }: HttpContextContract) {
+    const newPostSchema = schema.create({
+      name: schema.string([rules.required()]),
+      email: schema.string(),
+      password: schema.string(),
+      ap_paterno: schema.string(),
+    })
+    const payload = await request.validate({ schema: newPostSchema })
+    if (!payload) {
+      return 'Error'
+    }
+    const user = new User()
+    user.name = request.input('name')
+    user.email = request.input('email')
+    user.password = await Hash.make(request.input('password'))
+    user.ap_paterno = request.input('ap_paterno')
+    user.monitor = 0
+    if (await user.save()) {
+      return 'ok'
     }
 
-    public async login({ request, response, auth }: HttpContextContract) {
-        await request.validate({
-            schema: schema.create({
-                email: schema.string([
-                    rules.email(),
-                    rules.trim(),
-                ]),
-                password: schema.string([
-                    rules.minLength(8),
-                    rules.maxLength(20),
-                    rules.trim(),
-                ]),
-            }),
-            messages: {
-                required: 'El campo {{ field }} es obligatorio.',
-                string: 'El campo {{ field }} debe ser una cadena de caracteres.',
-                trim: 'El campo {{ field }} no debe contener espacios en blanco.',
-                email: 'El campo {{ field }} debe ser un correo electrónico válido.',
-                minLength: 'El campo {{ field }} debe tener un mínimo de {{ options.minLength }} caracteres.',
-                maxLength: 'El campo {{ field }} debe tener un máximo de {{ options.maxLength }} caracteres.',
-            }
-        })
+  }
 
-        const user = await User.query().where('email', request.input('email')).first()
+  public async login({ auth, request, response }) {
+    const validarLogin = schema.create({
+      email: schema.string(),
+      password: schema.string(),
+    })
+    Logger.info(request.body())
+    const email = request.body().email
+    const password = request.body().password
+    const payload = await request.validate({ schema: validarLogin })
 
-        if (!user) {
-            return response.badRequest({
-                'status': 400,
-                'message': 'No existe ningún usuario con este correo o su cuenta está desactivada.',
-                'error': [],
-                'data': [],
-            })
-        }
 
-        if(!await Hash.verify(user.password, request.input('password'))) {
-            return response.badRequest({
-                'status': 400,
-                'message': 'Credenciales de usuario incorrectas.',
-                'error': [],
-                'data': [],
-            })
-        }
-
-        const token = await auth.use('api').generate(user)
-
-        return response.ok({
-            'status': 200,
-            'message': 'Sesión iniciada correctamente.',
-            'error': [],
-            'data': user,
-            'token': token.token,
-        })
+    if (!payload) {
+      return response.badRequest('Invalido')
+    }
+    const user = await User.query().where('email', request.input('email')).first()
+    if (!user) {
+      return response.badRequest({
+        'status': 400,
+        'mensaje': 'No existe ningún usuario con este correo o su cuenta está desactivada.',
+        'error': [],
+        'data': [],
+      })
     }
 
-    public async logout({ auth, response }: HttpContextContract) {
-        await auth.use('api').revoke()
-
-        return response.ok({
-            'status': 200,
-            'message': 'Sesión cerrada correctamente.',
-            'error': [],
-            'data': [],
-        })
+    if (!await Hash.verify(user.password, request.input('password'))) {
+      return response.badRequest({
+        'status': 400,
+        'mensaje': 'Credenciales de usuario incorrectas.',
+        'error': [],
+        'data': [],
+      })
     }
+    const token = await auth.use('api').attempt(email, password, {
+      expiresIn: '1 days',
+    })
+    return { 'token': token.token }
+  }
 
-    public async getUser({ params, response }) {
-        const user = await User.find(params.id)
+  public async logout({ auth, response, params }) {
+    await auth.use('api').revoke()
 
-        if(!user) {
-            return response.badRequest({
-                'status': 400,
-                'message': 'No existe ningún usuario con el id: ' + params.id + '.',
-                'error': [],
-                'data': [],
-            })
-        }
 
-        return user
+    return response.ok({ 'status': 200, 'mensaje': 'Sesión cerrada correctamente.', 'error': [], 'data': [] })
+  }
+
+  public async infoUserObjeto({ auth }) {
+    const user = await auth.authenticate()
+    const infoUser = await User.query().where('id', user.id).first()
+    return infoUser
+  }
+
+  public async infoUser({ auth, response }) {
+    if (auth.user) {
+      const user = await auth.authenticate()
+      const infoUser = await User.query().where('id', user.id).first()
+      return infoUser
+    } else {
+      return response.badRequest({
+        'status': 401,
+        'mensaje': 'No existe ningún usuario con este correo o su cuenta está desactivada.',
+        'error': [],
+        'data': [],
+      })
     }
+  }
 
-    public async getTokenUser({ auth, response }) {
-        const user = await auth.use('api').authenticate()
-        
-        return response.ok({
-            'data': user,
-        })
+  public async infoUsuario({ }) {
+    const user = await User.all()
+    return user
+  }
+
+  public async validarToken({ auth }) {
+    if (auth.user) {
+      return true
+    } else {
+      return false
     }
+  }
+
+  public async infoIDUser({ params }) {
+    const user = await User.findOrFail(params.id)
+    return user
+  }
+
+
+
 }

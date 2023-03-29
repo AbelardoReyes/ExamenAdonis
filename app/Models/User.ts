@@ -5,23 +5,19 @@ export default class User extends BaseModel {
   @column({ isPrimary: true })
   public id: number
 
-  @column()
+  @column({ columnName: 'name', serialize: value => value.charAt(0).toUpperCase() + value.slice(1), consume: value => value.toLowerCase() })
   public name: string
 
-  @column()
+  @column({ columnName: 'ap_paterno', serialize: value => value.charAt(0).toUpperCase() + value.slice(1), consume: value => value.toLowerCase() })
   public ap_paterno: string
 
-  @column()
-  public ap_materno: string
-
-  @column()
-  public email: string
-
-  @column({ serializeAs: null })
+  @column({ columnName: 'monitor'})
+  public monitor: number
+  @column({ columnName: 'password'})
   public password: string
 
-  @column()
-  public rememberMeToken: string | null
+  @column({ columnName: 'email'})
+  public email: string
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
