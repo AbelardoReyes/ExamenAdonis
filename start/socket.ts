@@ -17,18 +17,8 @@ Ws.io.on("connection", (socket) => {
 
   Ws.io.emit("connectedUsers", monitores);
 
-  socket.on("barco", (data) => {
-    if (!monitores.includes(data.id)) {
-      Ws.io.emit("connectedUsers", monitores);
-      monitores.push(data.id);
-    }
-    console.log(data.id, "se agrego al arreglo: ", monitores);
-  });
-
-  Ws.io.emit("barco", monitores);
 
   Ws.io.emit("connectedUsers", monitores);
-
 
   console.log(monitores);
   socket.on("inicio", (data) => {
@@ -44,4 +34,14 @@ Ws.io.on("connection", (socket) => {
     }
     console.log('Turno: ', monitores[turno])
   } );
+});
+
+Ws.io.on("barco", (data) => {
+  if (!monitores.includes(data.id)) {
+    Ws.io.emit("connectedUsers", monitores);
+    monitores.push(data.id);
+  }
+  console.log(data.id, "se agrego al arreglo: ", monitores);
+  Ws.io.emit("barco", monitores);
+
 });
