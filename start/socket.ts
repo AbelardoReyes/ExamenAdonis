@@ -13,6 +13,8 @@ Ws.io.on("connection", (socket) => {
     Ws.io.emit("connectedUsers", monitores);
     monitores.push(socket.id);
   }
+
+
   socket.on("disconnect", () => {
     monitores.splice(monitores.indexOf(socket.id), 1);
     Ws.io.emit("connectedUsers", monitores);
@@ -20,11 +22,18 @@ Ws.io.on("connection", (socket) => {
   });
 
   Ws.io.emit("connectedUsers", monitores);
-  socket.conn.on("monitor", ({ type, data }) => {
 
+  socket.conn.on("connect", ({ type, data }) => {
+    console.log(data, "el otro");
     console.log(type);
   });
 
+  socket.on("connect", ({ type, data }) => {
+    console.log(data, "sockett");
+    console.log(type);
+  });
+
+  Ws.io.emit("connectedUsers", monitores);
 
 
   console.log(monitores);
