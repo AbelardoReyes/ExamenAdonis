@@ -5,9 +5,9 @@ Ws.boot()
  * Listen for incoming socket connections
  */
 const monitores: string[] = [];
-const orden: string[] = ["","","","","",""];
+let orden: string[] = ["","","","","",""];
 
-let turno = 9;
+let turno = 0;
 let usuario = "";
 
 
@@ -37,15 +37,7 @@ Ws.io.on("connection", (socket) => {
 
   console.log(monitores);
 
-  socket.on("iniciar", (data) => {
-    if(orden.length<=0){
-      let error="No hay usuarios en la cola"
-      Ws.io.emit("error",error)
-    }
 
-    console.log('Inicio: ', monitores[turno])
-    Ws.io.emit("iniciar", data);
-  });
 
 
   socket.on("monitor", (data) => {
@@ -60,14 +52,18 @@ Ws.io.on("connection", (socket) => {
   Ws.io.emit("orden", orden);
 
 
-  socket.on("termino", (data) => {
-    console.log('Terminado: ', orden[turno])
-    Ws.io.emit("termino", data);
-    turno++
-    if (turno >= monitores.length) {
-      turno = 0
+  socket.on("prueba1", (data) => {
+    console.log('Prueba 1: ', data)
+    Ws.io.emit("pruebas1", data);}
+  );
+
+  socket.on("cambio", (data) => {
+    orden = orden.filter(elemento => elemento !== "");
+    for (let i = 0; i < orden.length; i++) {
+      Ws.io.emit("cambio", orden[i]);
     }
-    Ws.io.emit("iniciar", turno);
-    console.log('Turno: ', orden[turno])
+    console.log('Turno: ', data)
   } );
+
+
 });
